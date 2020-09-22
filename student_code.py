@@ -39,8 +39,15 @@ class AStar(object):
             distance_end = math.sqrt((end_int_x - conn_int_x)
                                      ** 2 + (end_int_y - conn_int_y)**2)
 
-            distance_dict[connected_i] = [distance_int, distance_end]
+            # f
+            distance = distance_int + distance_end
 
+            distance_dict[connected_i] = [distance_int, distance_end, distance]
+
+        # TODO:
+        # Get the smallest f and that is the next node
+        # Figure out the stopping condition
+        # All all the frontiers explored
         pass
 
 
