@@ -85,7 +85,17 @@ A* Search
 
     "best estimated total path cost first"
 
+A* finds the lowest cost path if: h(s) < true cost
+
+    h (estimated distance to the goal at a state) should never overestimate distance to a goal 
+
+    h is optimistic 
+
+    h is admissable 
+
     
+
+
 
 
 
