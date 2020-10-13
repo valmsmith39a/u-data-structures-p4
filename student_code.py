@@ -1,45 +1,72 @@
 import math
+import heapq
+
+
+def get_distance(loc1, loc2, Map):
+    coord1 = Map.intersections[loc1]
+    coord2 = Map.intersections[loc2]
+    x1 = coord1[0]
+    x2 = coord2[0]
+    y1 = coord1[1]
+    y2 = coord2[1]
+
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
 def shortest_path(M, start, goal):
     intersections = M.intersections
     roads = M.roads
 
-    start_coord = intersections[start]
-    goal_coord = intersections[goal]
+    explored = set()
+    frontier = []
+    g_values = dict()
+    f_values = dict()
+    best_previous_node = dict()
 
-    current_intersection = start
-    current_coord = start_coord
-    count = 0
-    while(current_intersection != goal and count < 50):
-        connected_roads = roads[current_intersection]
-        connected_road_coords = []
-        f_total_estimated_cost = 0
-        f_least = [0, 0]
+    for intersection in intersections.keys():
+        if intersection == start:
+            g_values[intersection] = 0
+            f_values[intersection] = get_distance(start, goal, M)
 
-        for connected_road in connected_roads:
-            connected_road_coords.append(
-                [intersections[connected_road], connected_road])
+        else:
+            g_values[intersection] = float('inf')
+            f_values[intersection] = float('inf')
 
-        count += 1
+    heapq.heappush(frontier, (float('inf'), start))
+    current_node = start
 
-        for idx, connected_road_coord in enumerate(connected_road_coords):
-            result = (current_coord[0] - connected_road_coord[0][0]) ** 2 + \
-                (current_coord[1] - connected_road_coord[0][1]) ** 2
-            g_path_cost = math.sqrt(result)
+    while len(frontier) != 0:
+        f, current_node = heapq.heappop(frontier)
+        explored.add(current_node)
 
-            result2 = (connected_road_coord[0][0] - goal_coord[0]) ** 2 + (
-                connected_road_coord[0][1] - goal_coord[1]) ** 2
-            h_estimated_path_cost = math.sqrt(result2)
+        if current_node == goal:
+            total_path = [current_node]
+            curr_node = current_node
+            while curr_node in best_previous_node.keys():
+                curr_node = best_previous_node[curr_node]
+                total_path.append(curr_node)
+            return [x for x in reversed(total_path)]
 
-            f = g_path_cost + h_estimated_path_cost
+        connected_nodes = roads[current_node]
 
-            if idx is 0:
-                f_least = [f, connected_road_coord]
+        for node in connected_nodes:
+            if node in explored:
+                continue
 
-            if f < f_least[0]:
-                f_least = [f, connected_road_coord]
+            g_connected_node_temp = g_values[current_node] + \
+                get_distance(current_node, node, M)
+            h_connected_node = get_distance(node, goal, M)
+            f_connected_node = g_connected_node_temp + h_connected_node
 
-        current_intersection = f_least[1][1]
+            if g_connected_node_temp >= g_values[node]:
+                continue
 
-    return
+            best_previous_node[node] = current_node
+            g_values[node] = g_connected_node_temp
+            f_values[node] = f_connected_node
+
+            if node not in explored:
+                if node not in frontier:
+                    heapq.heappush(frontier, (f_connected_node, node))
+
+    return None
