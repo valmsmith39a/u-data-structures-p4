@@ -1,3 +1,19 @@
+"""
+Sources:
+    A* Search Algorithm
+    https://en.wikipedia.org/wiki/A*_search_algorithm
+    http://robotics.caltech.edu/wiki/images/e/e0/Astar.pdf
+    https://www.redblobgames.com/pathfinding/a-star/introduction.html
+    https://www.geeksforgeeks.org/a-search-algorithm/
+    https://brilliant.org/wiki/a-star-search/
+    
+    Euclidean distance
+    https://www.cut-the-knot.org/pythagoras/DistanceFormula.shtml
+    
+    Priority Queue
+    https://docs.python.org/3/library/heapq.html
+    https://www.geeksforgeeks.org/heap-queue-or-heapq-in-python/
+"""
 import math
 import heapq
 
@@ -23,6 +39,7 @@ def shortest_path(M, start, goal):
     f_values = dict()
     best_previous_node = dict()
 
+    # initialize g and f values
     for intersection in intersections.keys():
         if intersection == start:
             g_values[intersection] = 0
@@ -32,20 +49,23 @@ def shortest_path(M, start, goal):
             g_values[intersection] = float('inf')
             f_values[intersection] = float('inf')
 
+    # create priority queue with `start` intersection
     heapq.heappush(frontier, (float('inf'), start))
     current_node = start
 
     while len(frontier) != 0:
-        f, current_node = heapq.heappop(frontier)
-        explored.add(current_node)
 
         if current_node == goal:
+            # build total_path
             total_path = [current_node]
-            curr_node = current_node
-            while curr_node in best_previous_node.keys():
-                curr_node = best_previous_node[curr_node]
-                total_path.append(curr_node)
-            return [x for x in reversed(total_path)]
+
+            while current_node in best_previous_node.keys():
+                current_node = best_previous_node[current_node]
+                total_path.append(current_node)
+
+            total_path.reverse()
+
+            return total_path
 
         connected_nodes = roads[current_node]
 
@@ -53,20 +73,27 @@ def shortest_path(M, start, goal):
             if node in explored:
                 continue
 
+            # calculate g value of connected node, with current node as the previous node
             g_connected_node_temp = g_values[current_node] + \
                 get_distance(current_node, node, M)
+            # calculate h of connected node
             h_connected_node = get_distance(node, goal, M)
             f_connected_node = g_connected_node_temp + h_connected_node
 
+            # if calculated g value is greater than existing g value, then not the "best" previous node
             if g_connected_node_temp >= g_values[node]:
                 continue
 
+            # store best previous node, g and h values
             best_previous_node[node] = current_node
             g_values[node] = g_connected_node_temp
             f_values[node] = f_connected_node
 
-            if node not in explored:
-                if node not in frontier:
-                    heapq.heappush(frontier, (f_connected_node, node))
+            # push to priority queue
+            if (node not in explored) and (node not in frontier):
+                heapq.heappush(frontier, (f_connected_node, node))
+
+        f, current_node = heapq.heappop(frontier)
+        explored.add(current_node)
 
     return None
